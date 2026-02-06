@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brillouin Zone Visualiser</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0a0a1a;
+      color: #e0e0e0;
+      display: flex;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      width: 280px;
+      min-width: 280px;
+      background: #111128;
+      border-right: 1px solid #222244;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      z-index: 10;
+    }
+    #sidebar h1 {
+      font-size: 16px;
+      padding: 16px;
+      border-bottom: 1px solid #222244;
+      background: linear-gradient(135deg, #1a1a3e, #111128);
+      letter-spacing: 0.5px;
+    }
+    #sidebar h1 span { color: #4fc3f7; }
+
+    /* ── Controls ── */
+    #controls-panel { padding: 12px; flex: 1; }
+    .control-group {
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #1a1a3a;
+    }
+    .control-group:last-child { border-bottom: none; }
+    .control-group label {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #888;
+      margin-bottom: 6px;
+    }
+    .control-group select,
+    .control-group input[type="range"] {
+      width: 100%;
+      background: #1a1a3a;
+      border: 1px solid #333366;
+      color: #e0e0e0;
+      padding: 6px 8px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    .control-group select:focus,
+    .control-group input:focus { outline: 1px solid #4fc3f7; }
+    .control-group input[type="range"] {
+      -webkit-appearance: none;
+      height: 6px;
+      padding: 0;
+      border-radius: 3px;
+      background: #333366;
+      cursor: pointer;
+    }
+    .control-group input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #4fc3f7;
+      cursor: pointer;
+    }
+
+    /* ── Checkbox controls ── */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 0;
+    }
+    .toggle-row span { font-size: 13px; }
+    .toggle-row input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #4fc3f7;
+      cursor: pointer;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 14px;
+      border: 1px solid #333366;
+      border-radius: 4px;
+      background: #1a1a3a;
+      color: #e0e0e0;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      width: 100%;
+      margin-bottom: 6px;
+    }
+    .btn:hover { background: #252555; border-color: #4fc3f7; }
+    .btn-primary { background: #1a3a6a; border-color: #4fc3f7; }
+    .btn-primary:hover { background: #2a5a9a; }
+
+    /* ── Zone value display ── */
+    .slider-value {
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      color: #4fc3f7;
+      margin-top: 4px;
+    }
+
+    /* ── Info display ── */
+    #lattice-info {
+      font-size: 12px;
+      color: #aaa;
+      line-height: 1.6;
+      padding: 8px 0;
+    }
+    #lattice-info strong { color: #4fc3f7; }
+
+    /* ── Warning ── */
+    .warning {
+      background: rgba(243, 156, 18, 0.15);
+      border: 1px solid #f39c12;
+      color: #f39c12;
+      padding: 6px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-top: 6px;
+      display: none;
+    }
+
+    /* ── Main viewport ── */
+    #viewport {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    #canvas-2d {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    #container-3d {
+      width: 100%;
+      height: 100%;
+      display: none;
+    }
+
+    /* ── Notes panel ── */
+    #notes-panel {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 400px;
+      height: 100%;
+      background: rgba(17, 17, 40, 0.95);
+      border-left: 1px solid #222244;
+      overflow-y: auto;
+      z-index: 20;
+      padding: 20px;
+      transition: transform 0.3s ease;
+    }
+    #notes-panel.hidden { transform: translateX(100%); pointer-events: none; }
+    #notes-panel h3 {
+      color: #4fc3f7;
+      margin: 16px 0 8px;
+      font-size: 16px;
+    }
+    #notes-panel h4 {
+      color: #81d4fa;
+      margin: 12px 0 6px;
+      font-size: 14px;
+    }
+    #notes-panel h5 {
+      color: #b3e5fc;
+      margin: 10px 0 4px;
+      font-size: 13px;
+    }
+    #notes-panel p, #notes-panel li, #notes-panel td, #notes-panel span, #notes-panel br {
+      font-size: 13px;
+      line-height: 1.7;
+      color: #ccc;
+    }
+    #notes-panel code {
+      background: #1a1a3a;
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-size: 12px;
+      color: #4fc3f7;
+    }
+    #notes-panel hr {
+      border: none;
+      border-top: 1px solid #333;
+      margin: 16px 0;
+    }
+    #notes-panel ul { padding-left: 20px; margin: 6px 0; }
+    #notes-panel table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0;
+    }
+    #notes-panel td {
+      padding: 4px 8px;
+      border: 1px solid #333;
+    }
+    .glossary-term {
+      padding: 8px 0;
+      border-bottom: 1px solid #1a1a3a;
+    }
+    .glossary-term p {
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: #999;
+    }
+
+    /* ── Tooltip ── */
+    .point-tooltip {
+      position: fixed;
+      background: rgba(17, 17, 40, 0.95);
+      border: 1px solid #4fc3f7;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 12px;
+      color: #e0e0e0;
+      max-width: 280px;
+      pointer-events: none;
+      z-index: 100;
+      line-height: 1.5;
+    }
+    .point-tooltip strong {
+      color: #f1c40f;
+      font-size: 14px;
+    }
+
+    /* ── Keyboard shortcuts hint ── */
+    .shortcuts-hint {
+      font-size: 10px;
+      color: #555;
+      padding: 8px 0;
+      line-height: 1.8;
+    }
+    .shortcuts-hint kbd {
+      background: #1a1a3a;
+      border: 1px solid #333;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 10px;
+      color: #888;
+    }
+
+    /* ── Export settings ── */
+    .export-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .export-row select {
+      flex: 1;
+      background: #1a1a3a;
+      border: 1px solid #333366;
+      color: #e0e0e0;
+      padding: 4px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar Controls -->
+  <div id="sidebar">
+    <h1>🔬 <span>Brillouin Zone</span> Visualiser</h1>
+
+    <div id="controls-panel">
+      <!-- Mode Toggle -->
+      <div class="control-group">
+        <button id="mode-toggle" class="btn btn-primary">2D Mode</button>
+      </div>
+
+      <!-- Lattice Type -->
+      <div class="control-group">
+        <label>Lattice Type</label>
+        <select id="lattice-select">
+          <option value="square">Square</option>
+          <option value="rectangular">Rectangular</option>
+          <option value="hexagonal">Hexagonal</option>
+        </select>
+      </div>
+
+      <!-- Zone Slider -->
+      <div class="control-group">
+        <label>Brillouin Zones</label>
+        <input type="range" id="zone-slider" min="1" max="20" value="1">
+        <div class="slider-value" id="zone-value">1</div>
+      </div>
+
+      <!-- Toggles -->
+      <div class="control-group">
+        <label>Display Options</label>
+        <div class="toggle-row">
+          <span>Grid</span>
+          <input type="checkbox" id="grid-toggle" checked>
+        </div>
+        <div class="toggle-row">
+          <span>Reciprocal Points</span>
+          <input type="checkbox" id="points-toggle" checked>
+        </div>
+        <div class="toggle-row">
+          <span>Zone Numbers</span>
+          <input type="checkbox" id="numbers-toggle" checked>
+        </div>
+        <div class="toggle-row">
+          <span>Labels</span>
+          <input type="checkbox" id="labels-toggle" checked>
+        </div>
+        <div class="toggle-row">
+          <span>Ray Tracing (3D)</span>
+          <input type="checkbox" id="ray-toggle">
+        </div>
+      </div>
+
+      <!-- Lattice Info -->
+      <div class="control-group">
+        <label>Lattice Info</label>
+        <div id="lattice-info"></div>
+      </div>
+
+      <!-- Export -->
+      <div class="control-group">
+        <label>Export PNG</label>
+        <div class="export-row">
+          <select id="export-scale">
+            <option value="1">1×</option>
+            <option value="2">2×</option>
+            <option value="4">4×</option>
+          </select>
+          <div class="toggle-row">
+            <span style="font-size: 12px">Transparent</span>
+            <input type="checkbox" id="export-transparent">
+          </div>
+        </div>
+        <button id="export-btn" class="btn">📥 Export PNG</button>
+      </div>
+
+      <!-- Notes toggle -->
+      <div class="control-group">
+        <button id="notes-toggle" class="btn">📚 Notes</button>
+      </div>
+
+      <!-- Keyboard Shortcuts -->
+      <div class="shortcuts-hint">
+        <kbd>M</kbd> Mode &nbsp;
+        <kbd>G</kbd> Grid &nbsp;
+        <kbd>P</kbd> Points &nbsp;
+        <kbd>L</kbd> Labels<br>
+        <kbd>N</kbd> Notes &nbsp;
+        <kbd>E</kbd> Export &nbsp;
+        <kbd>R</kbd> Ray trace
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Viewport -->
+  <div id="viewport">
+    <canvas id="canvas-2d"></canvas>
+    <div id="container-3d"></div>
+
+    <!-- Notes Panel (overlay) -->
+    <div id="notes-panel" class="hidden">
+      <div id="notes-content">Loading notes...</div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+{
+  "terms": [
+    {
+      "term": "Reciprocal Lattice",
+      "definition": "A lattice in wavevector (k) space constructed from the Fourier transform of the real-space lattice. Each point represents a plane wave with the periodicity of the crystal.",
+      "symbol": "G"
+    },
+    {
+      "term": "Brillouin Zone",
+      "definition": "The Wigner-Seitz cell of the reciprocal lattice. The first BZ contains all unique wavevectors, as any k outside it is equivalent to a k inside it plus a reciprocal lattice vector.",
+      "symbol": "BZ"
+    },
+    {
+      "term": "Wigner-Seitz Cell",
+      "definition": "The region of space closer to one lattice point than any other. Constructed by drawing perpendicular bisectors to all lattice vectors from a chosen origin.",
+      "symbol": null
+    },
+    {
+      "term": "Bragg Plane",
+      "definition": "A plane in k-space that satisfies the Bragg diffraction condition 2k·G = |G|². It forms the boundary of a Brillouin zone.",
+      "symbol": null
+    },
+    {
+      "term": "High-Symmetry Point",
+      "definition": "A point in the Brillouin zone invariant under a subset of the crystal's symmetry operations. Band energies often have extrema at these points.",
+      "symbol": null
+    },
+    {
+      "term": "Γ Point",
+      "definition": "The center of the Brillouin zone at k = 0. All crystal symmetry operations leave Γ invariant.",
+      "symbol": "Γ"
+    },
+    {
+      "term": "Band Structure",
+      "definition": "The relationship between electron energy E and wavevector k within the Brillouin zone. Determines electronic properties of solids.",
+      "symbol": "E(k)"
+    },
+    {
+      "term": "Phonon",
+      "definition": "A quantum of lattice vibration. Phonon dispersion relations ω(k) are defined within the Brillouin zone.",
+      "symbol": "ω(k)"
+    },
+    {
+      "term": "Fermi Surface",
+      "definition": "The surface in k-space separating occupied from unoccupied electron states at absolute zero. Its shape within the BZ determines metallic properties.",
+      "symbol": null
+    },
+    {
+      "term": "Miller Indices",
+      "definition": "A set of integers (hkl) that specify a reciprocal lattice vector G = hb₁ + kb₂ + lb₃ and the family of crystal planes perpendicular to it.",
+      "symbol": "(hkl)"
+    },
+    {
+      "term": "Zone Folding",
+      "definition": "The process of mapping k-points from higher Brillouin zones back into the first zone by subtracting appropriate reciprocal lattice vectors.",
+      "symbol": null
+    },
+    {
+      "term": "Bloch's Theorem",
+      "definition": "States that electron wavefunctions in a periodic potential have the form ψ_k(r) = e^(ik·r) u_k(r), where u_k has the periodicity of the lattice.",
+      "symbol": "ψ_k(r)"
+    }
+  ]
+}

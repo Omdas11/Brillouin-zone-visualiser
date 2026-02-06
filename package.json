@@ -1,0 +1,24 @@
+{
+  "name": "brillouin-zone-visualiser",
+  "version": "1.0.0",
+  "description": "Interactive 2D & 3D Brillouin Zone Visualiser with accurate Wigner-Seitz construction",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "brillouin-zone",
+    "solid-state-physics",
+    "reciprocal-lattice",
+    "wigner-seitz"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^5.4.21"
+  },
+  "dependencies": {
+    "three": "^0.160.0"
+  }
+}
