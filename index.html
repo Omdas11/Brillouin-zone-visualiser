@@ -10,8 +10,8 @@
     html, body { height: 100%; overflow: hidden; }
     body {
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: #0a0a1a;
-      color: #e0e0e0;
+      background: #f7f6f3;
+      color: #222;
       display: flex;
     }
 
@@ -19,28 +19,30 @@
     #sidebar {
       width: 280px;
       min-width: 280px;
-      background: #111128;
-      border-right: 1px solid #222244;
+      background: #ffffff;
+      border-right: 1px solid #d0d0d0;
       display: flex;
       flex-direction: column;
       overflow-y: auto;
       z-index: 10;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.05);
     }
     #sidebar h1 {
       font-size: 16px;
       padding: 16px;
-      border-bottom: 1px solid #222244;
-      background: linear-gradient(135deg, #1a1a3e, #111128);
+      border-bottom: 1px solid #d0d0d0;
+      background: #fafafa;
       letter-spacing: 0.5px;
+      color: #222;
     }
-    #sidebar h1 span { color: #4fc3f7; }
+    #sidebar h1 span { color: #8b4513; }
 
     /* ── Controls ── */
     #controls-panel { padding: 12px; flex: 1; }
     .control-group {
       margin-bottom: 16px;
       padding-bottom: 12px;
-      border-bottom: 1px solid #1a1a3a;
+      border-bottom: 1px solid #e5e5e5;
     }
     .control-group:last-child { border-bottom: none; }
     .control-group label {
@@ -48,36 +50,48 @@
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 1px;
-      color: #888;
+      color: #666;
       margin-bottom: 6px;
+      font-weight: 600;
     }
     .control-group select,
     .control-group input[type="range"] {
       width: 100%;
-      background: #1a1a3a;
-      border: 1px solid #333366;
-      color: #e0e0e0;
+      background: #f9f9f9;
+      border: 1px solid #ccc;
+      color: #222;
       padding: 6px 8px;
       border-radius: 4px;
       font-size: 13px;
     }
     .control-group select:focus,
-    .control-group input:focus { outline: 1px solid #4fc3f7; }
+    .control-group input:focus { outline: 2px solid #8b4513; }
     .control-group input[type="range"] {
       -webkit-appearance: none;
-      height: 6px;
+      height: 8px;
       padding: 0;
-      border-radius: 3px;
-      background: #333366;
+      border-radius: 4px;
+      background: #ddd;
       cursor: pointer;
+      border: none;
     }
     .control-group input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 16px;
-      height: 16px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
-      background: #4fc3f7;
+      background: #8b4513;
       cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .control-group input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #8b4513;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
 
     /* ── Checkbox controls ── */
@@ -87,11 +101,11 @@
       justify-content: space-between;
       padding: 4px 0;
     }
-    .toggle-row span { font-size: 13px; }
+    .toggle-row span { font-size: 13px; color: #444; }
     .toggle-row input[type="checkbox"] {
-      width: 16px;
-      height: 16px;
-      accent-color: #4fc3f7;
+      width: 18px;
+      height: 18px;
+      accent-color: #8b4513;
       cursor: pointer;
     }
 
@@ -100,49 +114,51 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 8px 14px;
-      border: 1px solid #333366;
+      padding: 10px 14px;
+      min-height: 44px;
+      border: 1px solid #ccc;
       border-radius: 4px;
-      background: #1a1a3a;
-      color: #e0e0e0;
+      background: #f5f5f5;
+      color: #222;
       font-size: 13px;
       cursor: pointer;
-      transition: background 0.15s, border-color 0.15s;
+      transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
       width: 100%;
       margin-bottom: 6px;
     }
-    .btn:hover { background: #252555; border-color: #4fc3f7; }
-    .btn-primary { background: #1a3a6a; border-color: #4fc3f7; }
-    .btn-primary:hover { background: #2a5a9a; }
+    .btn:hover { background: #e8e8e8; border-color: #8b4513; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .btn-primary { background: #8b4513; border-color: #8b4513; color: #fff; }
+    .btn-primary:hover { background: #703a0f; box-shadow: 0 2px 6px rgba(139,69,19,0.3); }
 
     /* ── Zone value display ── */
     .slider-value {
       text-align: center;
       font-size: 20px;
       font-weight: bold;
-      color: #4fc3f7;
+      color: #8b4513;
       margin-top: 4px;
     }
 
     /* ── Info display ── */
     #lattice-info {
       font-size: 12px;
-      color: #aaa;
+      color: #555;
       line-height: 1.6;
       padding: 8px 0;
     }
-    #lattice-info strong { color: #4fc3f7; }
+    #lattice-info strong { color: #8b4513; font-weight: 600; }
 
     /* ── Warning ── */
     .warning {
-      background: rgba(243, 156, 18, 0.15);
-      border: 1px solid #f39c12;
-      color: #f39c12;
-      padding: 6px 8px;
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      color: #856404;
+      padding: 8px 10px;
       border-radius: 4px;
       font-size: 11px;
-      margin-top: 6px;
+      margin-top: 8px;
       display: none;
+      line-height: 1.5;
     }
 
     /* ── Main viewport ── */
@@ -169,44 +185,49 @@
       top: 0;
       width: 400px;
       height: 100%;
-      background: rgba(17, 17, 40, 0.95);
-      border-left: 1px solid #222244;
+      background: rgba(255, 255, 255, 0.98);
+      border-left: 1px solid #d0d0d0;
       overflow-y: auto;
       z-index: 20;
       padding: 20px;
       transition: transform 0.3s ease;
+      box-shadow: -4px 0 12px rgba(0,0,0,0.1);
     }
     #notes-panel.hidden { transform: translateX(100%); pointer-events: none; }
     #notes-panel h3 {
-      color: #4fc3f7;
+      color: #8b4513;
       margin: 16px 0 8px;
       font-size: 16px;
+      font-weight: 600;
     }
     #notes-panel h4 {
-      color: #81d4fa;
+      color: #a0522d;
       margin: 12px 0 6px;
       font-size: 14px;
+      font-weight: 600;
     }
     #notes-panel h5 {
-      color: #b3e5fc;
+      color: #8b6914;
       margin: 10px 0 4px;
       font-size: 13px;
+      font-weight: 600;
     }
     #notes-panel p, #notes-panel li, #notes-panel td, #notes-panel span, #notes-panel br {
       font-size: 13px;
       line-height: 1.7;
-      color: #ccc;
+      color: #333;
     }
     #notes-panel code {
-      background: #1a1a3a;
-      padding: 1px 4px;
+      background: #f5f5f5;
+      padding: 2px 5px;
       border-radius: 3px;
       font-size: 12px;
-      color: #4fc3f7;
+      color: #8b4513;
+      border: 1px solid #e0e0e0;
     }
     #notes-panel hr {
       border: none;
-      border-top: 1px solid #333;
+      border-top: 1px solid #d0d0d0;
       margin: 16px 0;
     }
     #notes-panel ul { padding-left: 20px; margin: 6px 0; }
@@ -217,51 +238,56 @@
     }
     #notes-panel td {
       padding: 4px 8px;
-      border: 1px solid #333;
+      border: 1px solid #d0d0d0;
+      color: #444;
     }
     .glossary-term {
       padding: 8px 0;
-      border-bottom: 1px solid #1a1a3a;
+      border-bottom: 1px solid #e5e5e5;
     }
+    .glossary-term strong { color: #222; }
     .glossary-term p {
       margin: 4px 0 0;
       font-size: 12px;
-      color: #999;
+      color: #555;
     }
 
     /* ── Tooltip ── */
     .point-tooltip {
       position: fixed;
-      background: rgba(17, 17, 40, 0.95);
-      border: 1px solid #4fc3f7;
+      background: rgba(255, 255, 255, 0.98);
+      border: 1px solid #8b4513;
       border-radius: 6px;
       padding: 8px 12px;
       font-size: 12px;
-      color: #e0e0e0;
+      color: #222;
       max-width: 280px;
       pointer-events: none;
       z-index: 100;
       line-height: 1.5;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
     .point-tooltip strong {
-      color: #f1c40f;
+      color: #8b4513;
       font-size: 14px;
+      font-weight: 600;
     }
 
     /* ── Keyboard shortcuts hint ── */
     .shortcuts-hint {
       font-size: 10px;
-      color: #555;
+      color: #777;
       padding: 8px 0;
       line-height: 1.8;
     }
     .shortcuts-hint kbd {
-      background: #1a1a3a;
-      border: 1px solid #333;
-      padding: 1px 5px;
+      background: #f5f5f5;
+      border: 1px solid #ccc;
+      padding: 2px 6px;
       border-radius: 3px;
       font-size: 10px;
-      color: #888;
+      color: #555;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
 
     /* ── Export settings ── */
@@ -273,12 +299,48 @@
     }
     .export-row select {
       flex: 1;
-      background: #1a1a3a;
-      border: 1px solid #333366;
-      color: #e0e0e0;
+      background: #f9f9f9;
+      border: 1px solid #ccc;
+      color: #222;
       padding: 4px 6px;
       border-radius: 4px;
       font-size: 12px;
+    }
+
+    /* ── Mobile Responsive ── */
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      
+      #sidebar {
+        width: 100%;
+        min-width: 100%;
+        max-height: 50vh;
+        border-right: none;
+        border-top: 1px solid #d0d0d0;
+        order: 2;
+        box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+      }
+      
+      #viewport {
+        order: 1;
+        height: 50vh;
+      }
+      
+      #notes-panel {
+        width: 100%;
+        height: 100vh;
+      }
+      
+      .shortcuts-hint { display: none; }
+    }
+
+    /* ── Reduced Motion ── */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
     }
   </style>
 </head>
@@ -305,9 +367,10 @@
 
       <!-- Zone Slider -->
       <div class="control-group">
-        <label>Brillouin Zones</label>
-        <input type="range" id="zone-slider" min="1" max="20" value="1">
+        <label>Brillouin Zones (n = 1 to 100)</label>
+        <input type="range" id="zone-slider" min="1" max="100" value="1">
         <div class="slider-value" id="zone-value">1</div>
+        <div class="warning" id="zone-warning">⚠️ High zone numbers (>20) may impact performance</div>
       </div>
 
       <!-- Toggles -->

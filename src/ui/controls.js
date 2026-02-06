@@ -51,16 +51,29 @@ export function initControls(onUpdate, onExport) {
   // Zone slider
   const zoneSlider = document.getElementById('zone-slider');
   const zoneValue = document.getElementById('zone-value');
+  const zoneWarning = document.getElementById('zone-warning');
+  let zoneUpdateTimeout;
+  
   if (zoneSlider) {
+    // Show immediate feedback
     zoneSlider.addEventListener('input', (e) => {
       state.maxZone = parseInt(e.target.value, 10);
       if (zoneValue) zoneValue.textContent = state.maxZone;
-      if (state.maxZone > 10) {
-        showWarning('High zone numbers (>10) may impact performance.');
-      } else {
-        hideWarning();
+      
+      // Show/hide warning
+      if (zoneWarning) {
+        if (state.maxZone > 20) {
+          zoneWarning.style.display = 'block';
+        } else {
+          zoneWarning.style.display = 'none';
+        }
       }
-      onUpdate();
+      
+      // Debounce actual render update
+      clearTimeout(zoneUpdateTimeout);
+      zoneUpdateTimeout = setTimeout(() => {
+        onUpdate();
+      }, 300);
     });
   }
 
@@ -151,7 +164,7 @@ export function initControls(onUpdate, onExport) {
 /**
  * Update visibility of 2D/3D specific elements and lattice options.
  */
-function update2D3DVisibility() {
+export function update2D3DVisibility() {
   const canvas2d = document.getElementById('canvas-2d');
   const container3d = document.getElementById('container-3d');
   const latticeSelect = document.getElementById('lattice-select');
