@@ -8,23 +8,23 @@
 import { vlength } from '../core/math.js';
 import { polygonCentroid } from '../core/geometry.js';
 
-/** Zone color palette with decreasing opacity for higher zones */
+/** Zone color palette with neutral academic colors */
 const ZONE_COLORS = [
-  'rgba(41, 128, 185, 0.6)',   // 1st zone — blue
-  'rgba(39, 174, 96, 0.4)',    // 2nd zone — green
-  'rgba(192, 57, 43, 0.35)',   // 3rd zone — red
-  'rgba(142, 68, 173, 0.3)',   // 4th zone — purple
-  'rgba(243, 156, 18, 0.28)',  // 5th zone — orange
-  'rgba(22, 160, 133, 0.25)',  // 6th zone — teal
-  'rgba(211, 84, 0, 0.22)',    // 7th zone — dark orange
-  'rgba(41, 128, 185, 0.2)',   // 8th+ — cycle
-  'rgba(39, 174, 96, 0.18)',
-  'rgba(192, 57, 43, 0.16)'
+  'rgba(139, 69, 19, 0.5)',    // 1st zone — saddle brown
+  'rgba(178, 34, 34, 0.4)',    // 2nd zone — firebrick
+  'rgba(85, 107, 47, 0.35)',   // 3rd zone — dark olive green
+  'rgba(128, 128, 128, 0.3)',  // 4th zone — gray
+  'rgba(160, 82, 45, 0.28)',   // 5th zone — sienna
+  'rgba(47, 79, 79, 0.25)',    // 6th zone — dark slate gray
+  'rgba(112, 128, 144, 0.22)', // 7th zone — slate gray
+  'rgba(139, 69, 19, 0.2)',    // 8th+ — cycle
+  'rgba(178, 34, 34, 0.18)',
+  'rgba(85, 107, 47, 0.16)'
 ];
 
 const ZONE_BORDER_COLORS = [
-  '#2980b9', '#27ae60', '#c0392b', '#8e44ad', '#f39c12',
-  '#16a085', '#d35400', '#2980b9', '#27ae60', '#c0392b'
+  '#8b4513', '#b22222', '#556b2f', '#808080', '#a0522d',
+  '#2f4f4f', '#708090', '#8b4513', '#b22222', '#556b2f'
 ];
 
 export class Renderer2D {
@@ -93,7 +93,7 @@ export class Renderer2D {
     if (transparent) {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     } else {
-      this.ctx.fillStyle = '#0a0a1a';
+      this.ctx.fillStyle = '#f7f6f3';
       this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
   }
@@ -104,7 +104,7 @@ export class Renderer2D {
     const cx = this.canvas.width / 2 + this.offset.x;
     const cy = this.canvas.height / 2 + this.offset.y;
 
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
     ctx.lineWidth = 1;
 
     // kx axis
@@ -120,7 +120,7 @@ export class Renderer2D {
     ctx.stroke();
 
     // Axis labels
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
     ctx.font = '14px monospace';
     ctx.fillText('kₓ', this.canvas.width - 30, cy - 10);
     ctx.fillText('kᵧ', cx + 10, 20);
@@ -130,7 +130,7 @@ export class Renderer2D {
   drawGrid(b1, b2) {
     if (!this.showGrid) return;
     const ctx = this.ctx;
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.08)';
     ctx.lineWidth = 0.5;
 
     const range = 10;
@@ -164,13 +164,13 @@ export class Renderer2D {
 
     // Origin
     const origin = this.toCanvas([0, 0]);
-    ctx.fillStyle = '#e74c3c';
+    ctx.fillStyle = '#b22222';
     ctx.beginPath();
     ctx.arc(origin[0], origin[1], 5, 0, Math.PI * 2);
     ctx.fill();
 
     // Other points
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
     for (const G of points) {
       const p = this.toCanvas(G);
       ctx.beginPath();
@@ -213,7 +213,7 @@ export class Renderer2D {
         if (this.showZoneNumbers) {
           const c = polygonCentroid(poly);
           const cp = this.toCanvas(c);
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
           ctx.font = 'bold 12px monospace';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
@@ -235,13 +235,13 @@ export class Renderer2D {
       const p = this.toCanvas(pos);
 
       // Point marker
-      ctx.fillStyle = '#f1c40f';
+      ctx.fillStyle = '#8b4513';
       ctx.beginPath();
       ctx.arc(p[0], p[1], 4, 0, Math.PI * 2);
       ctx.fill();
 
       // Label
-      ctx.fillStyle = '#f1c40f';
+      ctx.fillStyle = '#8b4513';
       ctx.font = 'bold 14px serif';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'bottom';

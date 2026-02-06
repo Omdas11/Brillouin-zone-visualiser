@@ -20,7 +20,7 @@ import { Renderer2D } from './render/render2d.js';
 import { Renderer3D } from './render/render3d.js';
 import { createEnvironmentMap, applyRayTraceSettings, removeRayTraceSettings } from './render/raytracer.js';
 import { exportCanvas2D, exportCanvas3D, downloadDataURL } from './render/export.js';
-import { state, initControls } from './ui/controls.js';
+import { state, initControls, update2D3DVisibility } from './ui/controls.js';
 import { initMenu } from './ui/menu.js';
 import { LabelManager } from './ui/labels.js';
 import glossary from './notes/glossary.json';
@@ -46,106 +46,134 @@ function update() {
  * Compute and render 2D Brillouin zones.
  */
 function update2D() {
-  if (!renderer2d) return;
-
-  // Get lattice definition
-  const latticeFn = LATTICE_2D[state.latticeType];
-  if (!latticeFn) return;
-  const lattice = latticeFn();
-  const { b1, b2 } = reciprocal2D(lattice.a1, lattice.a2);
-
-  // Generate reciprocal lattice points
-  const maxIndex = Math.max(state.maxZone + 2, 4);
-  const reciprocalPoints = generateReciprocalPoints2D(b1, b2, maxIndex);
-
-  // Compute zones
-  const zones = [];
-  for (let n = 1; n <= state.maxZone; n++) {
-    const polygons = computeNthBZ2D(reciprocalPoints, n);
-    zones.push({ zone: n, polygons });
+  if (!renderer2d) {
+    console.warn('2D renderer not initialized');
+    return;
   }
 
-  // Get high-symmetry points
-  currentHighSymmetryPoints = getHighSymmetryPoints2D(state.latticeType, b1, b2);
+  try {
+    // Get lattice definition
+    const latticeFn = LATTICE_2D[state.latticeType];
+    if (!latticeFn) {
+      console.error('Unknown lattice type:', state.latticeType);
+      return;
+    }
+    const lattice = latticeFn();
+    const { b1, b2 } = reciprocal2D(lattice.a1, lattice.a2);
 
-  // Update renderer settings
-  renderer2d.showGrid = state.showGrid;
-  renderer2d.showReciprocalPoints = state.showReciprocalPoints;
-  renderer2d.showZoneNumbers = state.showZoneNumbers;
-  renderer2d.showLabels = state.showLabels;
+    // Generate reciprocal lattice points
+    const maxIndex = Math.max(state.maxZone + 2, 4);
+    const reciprocalPoints = generateReciprocalPoints2D(b1, b2, maxIndex);
 
-  // Render
-  renderer2d.render({
-    zones,
-    reciprocalPoints: reciprocalPoints.slice(0, 50),
-    highSymmetryPoints: currentHighSymmetryPoints,
-    b1,
-    b2
-  });
+    // Compute zones
+    const zones = [];
+    for (let n = 1; n <= state.maxZone; n++) {
+      const polygons = computeNthBZ2D(reciprocalPoints, n);
+      zones.push({ zone: n, polygons });
+    }
 
-  // Set up hover tooltips
-  labelManager.setupHover2D(
-    renderer2d.canvas,
-    currentHighSymmetryPoints,
-    (k) => renderer2d.toCanvas(k)
-  );
+    // Get high-symmetry points
+    currentHighSymmetryPoints = getHighSymmetryPoints2D(state.latticeType, b1, b2);
 
-  // Update info display
-  updateInfo(lattice.name, b1, b2);
+    // Update renderer settings
+    renderer2d.showGrid = state.showGrid;
+    renderer2d.showReciprocalPoints = state.showReciprocalPoints;
+    renderer2d.showZoneNumbers = state.showZoneNumbers;
+    renderer2d.showLabels = state.showLabels;
+
+    // Render
+    renderer2d.render({
+      zones,
+      reciprocalPoints: reciprocalPoints.slice(0, 50),
+      highSymmetryPoints: currentHighSymmetryPoints,
+      b1,
+      b2
+    });
+
+    // Set up hover tooltips
+    labelManager.setupHover2D(
+      renderer2d.canvas,
+      currentHighSymmetryPoints,
+      (k) => renderer2d.toCanvas(k)
+    );
+
+    // Update info display
+    updateInfo(lattice.name, b1, b2);
+  } catch (error) {
+    console.error('Error in 2D render:', error);
+  }
 }
 
 /**
  * Compute and render 3D Brillouin zones.
  */
 function update3D() {
-  if (!renderer3d) {
-    const container = document.getElementById('container-3d');
-    if (!container) return;
-    renderer3d = new Renderer3D(container);
-  }
-
-  renderer3d.clearZones();
-
-  // Get lattice definition
-  const latticeFn = LATTICE_3D[state.latticeType];
-  if (!latticeFn) return;
-  const lattice = latticeFn();
-  const { b1, b2, b3 } = reciprocal3D(lattice.a1, lattice.a2, lattice.a3);
-
-  // Generate reciprocal lattice points
-  const maxIndex = Math.max(state.maxZone + 1, 3);
-  const reciprocalPoints = generateReciprocalPoints3D(b1, b2, b3, maxIndex);
-
-  // Ray tracing settings
-  renderer3d.showLabels = state.showLabels;
-  renderer3d.setRayTracing(state.rayTracing);
-
-  if (state.rayTracing) {
-    applyRayTraceSettings(renderer3d.renderer);
-    if (!envMap) {
-      envMap = createEnvironmentMap(renderer3d.renderer);
+  try {
+    if (!renderer3d) {
+      const container = document.getElementById('container-3d');
+      if (!container) {
+        console.error('3D container not found');
+        return;
+      }
+      renderer3d = new Renderer3D(container);
+      console.log('✓ 3D renderer initialized');
     }
-    renderer3d.scene.environment = envMap;
-  } else {
-    removeRayTraceSettings(renderer3d.renderer);
-    renderer3d.scene.environment = null;
+
+    renderer3d.clearZones();
+
+    // Get lattice definition
+    const latticeFn = LATTICE_3D[state.latticeType];
+    if (!latticeFn) {
+      console.error('Unknown 3D lattice type:', state.latticeType);
+      return;
+    }
+    const lattice = latticeFn();
+    const { b1, b2, b3 } = reciprocal3D(lattice.a1, lattice.a2, lattice.a3);
+
+    // Generate reciprocal lattice points
+    const maxIndex = Math.max(state.maxZone + 1, 3);
+    const reciprocalPoints = generateReciprocalPoints3D(b1, b2, b3, maxIndex);
+
+    // Ray tracing settings
+    renderer3d.showLabels = state.showLabels;
+    renderer3d.setRayTracing(state.rayTracing);
+
+    if (state.rayTracing) {
+      applyRayTraceSettings(renderer3d.renderer);
+      if (!envMap) {
+        envMap = createEnvironmentMap(renderer3d.renderer);
+      }
+      renderer3d.scene.environment = envMap;
+    } else {
+      removeRayTraceSettings(renderer3d.renderer);
+      renderer3d.scene.environment = null;
+    }
+
+    // Compute and display 1st BZ (3D higher zones are complex; show 1st zone)
+    const faces = computeFirstBZ3D(reciprocalPoints);
+    const opacity = state.maxZone === 1 ? 0.6 : 0.4;
+    renderer3d.addZone(faces, 1, opacity);
+
+    // Add reciprocal lattice points
+    const displayPoints = reciprocalPoints.slice(0, 100);
+    renderer3d.addReciprocalPoints(displayPoints);
+
+    // High-symmetry labels
+    currentHighSymmetryPoints = getHighSymmetryPoints3D(state.latticeType, b1, b2, b3);
+    renderer3d.addHighSymmetryLabels(currentHighSymmetryPoints);
+
+    // Update info
+    updateInfo(lattice.name, b1, b2, b3);
+  } catch (error) {
+    console.error('Error in 3D render:', error);
+    // Fallback to 2D if 3D fails
+    console.log('⚠️ 3D rendering failed, falling back to 2D');
+    state.mode = '2d';
+    const modeToggle = document.getElementById('mode-toggle');
+    if (modeToggle) modeToggle.textContent = '2D Mode';
+    update2D3DVisibility();
+    update2D();
   }
-
-  // Compute and display 1st BZ (3D higher zones are complex; show 1st zone)
-  const faces = computeFirstBZ3D(reciprocalPoints);
-  const opacity = state.maxZone === 1 ? 0.6 : 0.4;
-  renderer3d.addZone(faces, 1, opacity);
-
-  // Add reciprocal lattice points
-  const displayPoints = reciprocalPoints.slice(0, 100);
-  renderer3d.addReciprocalPoints(displayPoints);
-
-  // High-symmetry labels
-  currentHighSymmetryPoints = getHighSymmetryPoints3D(state.latticeType, b1, b2, b3);
-  renderer3d.addHighSymmetryLabels(currentHighSymmetryPoints);
-
-  // Update info
-  updateInfo(lattice.name, b1, b2, b3);
 }
 
 /**
@@ -266,30 +294,73 @@ function renderMarkdownBasic(md) {
  * Application initialisation.
  */
 function init() {
-  // Initialise 2D renderer
-  const canvas = document.getElementById('canvas-2d');
-  if (canvas) {
+  console.log('🔬 Brillouin Zone Visualiser - Initializing...');
+  
+  try {
+    // Initialise 2D renderer
+    const canvas = document.getElementById('canvas-2d');
+    if (!canvas) {
+      throw new Error('Canvas element not found');
+    }
+    
+    console.log('✓ Canvas element found');
     renderer2d = new Renderer2D(canvas);
     renderer2d.resize();
     renderer2d.onInteraction(() => update());
+    
     window.addEventListener('resize', () => {
       renderer2d.resize();
       update();
     });
+    console.log('✓ 2D renderer initialized');
+
+    // Initialise label manager
+    labelManager = new LabelManager();
+    console.log('✓ Label manager initialized');
+
+    // Initialise controls
+    initControls(update, handleExport);
+    initMenu();
+    console.log('✓ Controls initialized');
+
+    // Load notes
+    loadNotes();
+
+    // Initial render
+    console.log('🎨 Rendering initial scene...');
+    update();
+    console.log('✓ Initial render complete');
+  } catch (error) {
+    console.error('❌ Initialization failed:', error);
+    displayError('Failed to initialize the visualiser. Please refresh the page.');
   }
+}
 
-  // Initialise label manager
-  labelManager = new LabelManager();
-
-  // Initialise controls
-  initControls(update, handleExport);
-  initMenu();
-
-  // Load notes
-  loadNotes();
-
-  // Initial render
-  update();
+/**
+ * Display user-visible error message.
+ */
+function displayError(message) {
+  const viewport = document.getElementById('viewport');
+  if (viewport) {
+    const errorDiv = document.createElement('div');
+    errorDiv.style.cssText = `
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff3cd;
+      border: 2px solid #ffc107;
+      padding: 20px;
+      border-radius: 8px;
+      color: #856404;
+      font-size: 14px;
+      max-width: 400px;
+      text-align: center;
+      z-index: 1000;
+    `;
+    errorDiv.innerHTML = `<strong>⚠️ Error</strong><br>${message}`;
+    viewport.appendChild(errorDiv);
+  }
 }
 
 // Start application when DOM is ready

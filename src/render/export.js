@@ -25,7 +25,7 @@ export function exportCanvas2D(canvas, scale = 1, transparent = false, renderFn 
   const ctx = exportCanvas.getContext('2d');
 
   if (!transparent) {
-    ctx.fillStyle = '#0a0a1a';
+    ctx.fillStyle = '#f7f6f3';
     ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
   }
 
@@ -67,7 +67,7 @@ export function exportCanvas3D(renderer, scene, camera, scale = 1, transparent =
   renderer.setSize(originalWidth, originalHeight);
   scene.background = originalBackground;
   if (transparent) {
-    renderer.setClearColor(0x0a0a1a, 1);
+    renderer.setClearColor(0xf7f6f3, 1);
   }
 
   return dataURL;

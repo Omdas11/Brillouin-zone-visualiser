@@ -9,10 +9,10 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { vlength } from '../core/math.js';
 
-/** Zone colors for 3D rendering */
+/** Zone colors for 3D rendering (neutral academic palette) */
 const ZONE_COLORS_3D = [
-  0x2980b9, 0x27ae60, 0xc0392b, 0x8e44ad, 0xf39c12,
-  0x16a085, 0xd35400, 0x2980b9, 0x27ae60, 0xc0392b
+  0x8b4513, 0xb22222, 0x556b2f, 0x808080, 0xa0522d,
+  0x2f4f4f, 0x708090, 0x8b4513, 0xb22222, 0x556b2f
 ];
 
 export class Renderer3D {
@@ -35,7 +35,7 @@ export class Renderer3D {
   _init() {
     // Scene
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x0a0a1a);
+    this.scene.background = new THREE.Color(0xf7f6f3);
 
     // Camera
     const rect = this.container.getBoundingClientRect();
@@ -71,7 +71,7 @@ export class Renderer3D {
     this.scene.add(axesHelper);
 
     // Grid helper
-    const gridHelper = new THREE.GridHelper(20, 20, 0x333333, 0x222222);
+    const gridHelper = new THREE.GridHelper(20, 20, 0xcccccc, 0xdddddd);
     gridHelper.position.y = -0.01;
     this.scene.add(gridHelper);
 
@@ -205,9 +205,9 @@ export class Renderer3D {
     // Add wireframe edges
     const edgeGeo = new THREE.EdgesGeometry(geometry, 15);
     const edgeMat = new THREE.LineBasicMaterial({
-      color: 0xffffff,
+      color: 0x555555,
       transparent: true,
-      opacity: 0.4
+      opacity: 0.5
     });
     const wireframe = new THREE.LineSegments(edgeGeo, edgeMat);
     this.scene.add(wireframe);
@@ -231,7 +231,7 @@ export class Renderer3D {
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
     const material = new THREE.PointsMaterial({
-      color: 0xffffff,
+      color: 0x333333,
       size: 0.2,
       sizeAttenuation: true
     });
@@ -253,7 +253,7 @@ export class Renderer3D {
 
       // Add small sphere at point
       const sphereGeo = new THREE.SphereGeometry(0.15, 16, 16);
-      const sphereMat = new THREE.MeshBasicMaterial({ color: 0xf1c40f });
+      const sphereMat = new THREE.MeshBasicMaterial({ color: 0x8b4513 });
       const sphere = new THREE.Mesh(sphereGeo, sphereMat);
       sphere.position.set(pos[0], pos[1], pos[2]);
       this.scene.add(sphere);
@@ -268,7 +268,7 @@ export class Renderer3D {
     canvas.width = size;
     canvas.height = size;
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#f1c40f';
+    ctx.fillStyle = '#8b4513';
     ctx.font = 'bold 64px serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
