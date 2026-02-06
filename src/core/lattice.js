@@ -56,13 +56,11 @@ export const LATTICE_3D = {
  * where rot90([x,y]) = [-y, x]
  */
 export function reciprocal2D(a1, a2) {
-  const rot_a2 = [-a2[1], a2[0]];
-  const rot_a1 = [-a1[1], a1[0]];
   const det = a1[0] * a2[1] - a1[1] * a2[0];
   const factor = 2 * Math.PI / det;
   return {
-    b1: [rot_a2[0] * factor, rot_a2[1] * factor],
-    b2: [-rot_a1[0] * factor, -rot_a1[1] * factor]
+    b1: [a2[1] * factor, -a2[0] * factor],
+    b2: [-a1[1] * factor, a1[0] * factor]
   };
 }
 
