@@ -234,8 +234,9 @@ function computeZoneDifference2D(outerPolygon, innerPolygon, planes, n) {
       if (neg.length >= 3) newFragments.push(neg);
     }
     fragments = newFragments;
-    // Limit fragments to avoid explosion
-    if (fragments.length > 500) break;
+    // Limit fragments to prevent combinatorial explosion in high-zone-order computation
+    const MAX_ZONE_FRAGMENTS = 500;
+    if (fragments.length > MAX_ZONE_FRAGMENTS) break;
   }
 
   // Keep fragments whose centroids are outside the inner polygon
@@ -389,7 +390,7 @@ function sortVertices3DCCW(vertices, normal) {
     let isDup = false;
     for (const uv of unique) {
       const dx = vert[0] - uv[0], dy = vert[1] - uv[1], dz = vert[2] - uv[2];
-      if (dx * dx + dy * dy + dz * dz < 1e-14) { isDup = true; break; }
+      if (dx * dx + dy * dy + dz * dz < 1e-10) { isDup = true; break; }
     }
     if (!isDup) unique.push(vert);
   }
