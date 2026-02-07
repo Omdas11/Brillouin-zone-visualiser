@@ -66,7 +66,7 @@ function update2D() {
     const reciprocalPoints = generateReciprocalPoints2D(b1, b2, latticeRange);
 
     // Use pixel-based rendering (Python algorithm)
-    const plotRange = 3.2;
+    const plotRange = 10.0; // Increased to show more zones
     const resolution = 800; // High resolution for quality
     
     // Compute zone map using pixel-based algorithm
