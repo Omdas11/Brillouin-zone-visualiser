@@ -14,6 +14,167 @@ import {
 } from './math.js';
 
 /**
+ * Compute zone map using pixel-based approach (Python reference algorithm).
+ * 
+ * This algorithm matches the reference Python code:
+ * For each pixel (kx, ky), count how many reciprocal lattice points G
+ * are closer to the pixel than the origin is. The zone number is this count + 1.
+ * 
+ * @param {Array} reciprocalPoints - Array of reciprocal lattice vectors [x, y]
+ * @param {number} maxZone - Maximum zone number to compute
+ * @param {number} resolution - Image resolution (pixels per axis)
+ * @param {number} plotRange - The k-space range (-plotRange to +plotRange)
+ * @returns {ImageData} Zone map as ImageData with RGB zone colors
+ */
+export function computeZoneMapPixelBased(reciprocalPoints, maxZone, resolution = 800, plotRange = 3.2) {
+  const imageData = new ImageData(resolution, resolution);
+  const data = imageData.data;
+  
+  // Remove origin from lattice points (we compare distance to origin vs other points)
+  const latticePoints = reciprocalPoints.filter(G => 
+    Math.abs(G[0]) > 1e-9 || Math.abs(G[1]) > 1e-9
+  );
+  
+  // Zone colors matching Python Spectral_r colormap
+  const zoneColors = generateSpectralColors(maxZone);
+  
+  // For each pixel
+  for (let py = 0; py < resolution; py++) {
+    for (let px = 0; px < resolution; px++) {
+      // Convert pixel to k-space coordinates
+      const kx = -plotRange + (px / resolution) * (2 * plotRange);
+      const ky = plotRange - (py / resolution) * (2 * plotRange); // Flip y
+      
+      // Distance from pixel to origin (squared)
+      const distOriginSq = kx * kx + ky * ky;
+      
+      // Count how many lattice points are closer than the origin
+      let zoneNum = 1;
+      for (const G of latticePoints) {
+        const dx = kx - G[0];
+        const dy = ky - G[1];
+        const distGSq = dx * dx + dy * dy;
+        
+        if (distGSq < distOriginSq) {
+          zoneNum++;
+        }
+      }
+      
+      // Set pixel color
+      const idx = (py * resolution + px) * 4;
+      if (zoneNum <= maxZone) {
+        const color = zoneColors[zoneNum - 1];
+        data[idx] = color.r;
+        data[idx + 1] = color.g;
+        data[idx + 2] = color.b;
+        data[idx + 3] = color.a;
+      } else {
+        // Transparent for zones > maxZone
+        data[idx] = 0;
+        data[idx + 1] = 0;
+        data[idx + 2] = 0;
+        data[idx + 3] = 0;
+      }
+    }
+  }
+  
+  return imageData;
+}
+
+/**
+ * Generate colors for zones using Spectral_r colormap (reversed spectral).
+ * Approximates matplotlib's Spectral_r colormap.
+ */
+function generateSpectralColors(maxZone) {
+  const colors = [];
+  
+  for (let i = 0; i < maxZone; i++) {
+    // Interpolate through spectral colors (reversed: red -> blue)
+    const t = i / Math.max(1, maxZone - 1);
+    
+    let r, g, b;
+    if (t < 0.25) {
+      // Red to orange
+      const s = t / 0.25;
+      r = 255;
+      g = Math.floor(140 * s);
+      b = 0;
+    } else if (t < 0.5) {
+      // Orange to yellow
+      const s = (t - 0.25) / 0.25;
+      r = 255;
+      g = Math.floor(140 + 115 * s);
+      b = 0;
+    } else if (t < 0.75) {
+      // Yellow to green
+      const s = (t - 0.5) / 0.25;
+      r = Math.floor(255 * (1 - s));
+      g = 255;
+      b = Math.floor(100 * s);
+    } else {
+      // Green to blue
+      const s = (t - 0.75) / 0.25;
+      r = 0;
+      g = Math.floor(255 * (1 - s));
+      b = Math.floor(100 + 155 * s);
+    }
+    
+    colors.push({
+      r: Math.round(r),
+      g: Math.round(g),
+      b: Math.round(b),
+      a: Math.round(230) // Alpha ~0.9
+    });
+  }
+  
+  return colors;
+}
+
+/**
+ * Get Bragg planes for visualization (black lines in the Python reference).
+ * Returns array of {G, normal, d} for drawing perpendicular bisector lines.
+ */
+export function getBraggPlanes(reciprocalPoints, plotRange) {
+  const planes = [];
+  
+  for (const G of reciprocalPoints) {
+    const Gx = G[0];
+    const Gy = G[1];
+    
+    if (Math.abs(Gx) < 1e-9 && Math.abs(Gy) < 1e-9) continue;
+    
+    const magSq = Gx * Gx + Gy * Gy;
+    const d = magSq / 2;
+    
+    // Line equation: Gx*x + Gy*y = d
+    // Calculate endpoints for drawing
+    let x1, y1, x2, y2;
+    
+    if (Math.abs(Gy) > Math.abs(Gx)) {
+      // More horizontal line
+      x1 = -plotRange;
+      x2 = plotRange;
+      y1 = (d - Gx * x1) / Gy;
+      y2 = (d - Gx * x2) / Gy;
+    } else {
+      // More vertical line
+      y1 = -plotRange;
+      y2 = plotRange;
+      x1 = (d - Gy * y1) / Gx;
+      x2 = (d - Gy * y2) / Gx;
+    }
+    
+    // Only include if line is visible in plot range
+    const inRange = (v) => Math.abs(v) < plotRange * 1.5;
+    if (inRange(y1) || inRange(y2) || inRange(x1) || inRange(x2)) {
+      planes.push({ x1, y1, x2, y2, G });
+    }
+  }
+  
+  return planes;
+}
+
+/**
  * Compute the 1st Brillouin zone (Wigner-Seitz cell) in 2D.
  *
  * Algorithm:

@@ -8,16 +8,12 @@
  * Export a 2D canvas as PNG.
  *
  * @param {HTMLCanvasElement} canvas - Source canvas
- * @param {number} scale - Resolution multiplier (1, 2, or 4)
+ * @param {number} scale - Resolution multiplier (1, 2, 4, or 8)
  * @param {boolean} transparent - Whether to use transparent background
  * @param {Function} renderFn - Function to call to re-render at new scale
  * @returns {string} Data URL of the exported PNG
  */
 export function exportCanvas2D(canvas, scale = 1, transparent = false, renderFn = null) {
-  if (scale === 1 && !transparent) {
-    return canvas.toDataURL('image/png');
-  }
-
   // Create a high-resolution off-screen canvas
   const exportCanvas = document.createElement('canvas');
   exportCanvas.width = canvas.width * scale;
@@ -31,6 +27,7 @@ export function exportCanvas2D(canvas, scale = 1, transparent = false, renderFn 
 
   // Scale and draw
   ctx.scale(scale, scale);
+  ctx.imageSmoothingEnabled = false; // Crisp pixel art for zone maps
   ctx.drawImage(canvas, 0, 0);
 
   return exportCanvas.toDataURL('image/png');
