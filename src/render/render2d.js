@@ -37,6 +37,8 @@ export class Renderer2D {
     this.showReciprocalPoints = true;
     this.showZoneNumbers = true;
     this.showLabels = true;
+    this.showBraggPlanes = true; // Show Bragg plane lines
+    this.pixelBased = false; // Use pixel-based rendering
 
     this._setupInteraction();
   }
@@ -250,15 +252,78 @@ export class Renderer2D {
   }
 
   /**
+   * Draw Bragg plane lines (perpendicular bisectors).
+   * @param {Array} braggPlanes - Array of {x1, y1, x2, y2, G} objects
+   */
+  drawBraggPlanes(braggPlanes) {
+    if (!this.showBraggPlanes) return;
+    const ctx = this.ctx;
+    
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.lineWidth = 0.5;
+    
+    for (const plane of braggPlanes) {
+      const p1 = this.toCanvas([plane.x1, plane.y1]);
+      const p2 = this.toCanvas([plane.x2, plane.y2]);
+      
+      ctx.beginPath();
+      ctx.moveTo(p1[0], p1[1]);
+      ctx.lineTo(p2[0], p2[1]);
+      ctx.stroke();
+    }
+  }
+
+  /**
+   * Draw zone map from ImageData (pixel-based rendering).
+   * @param {ImageData} zoneMap - Zone map as ImageData
+   * @param {number} plotRange - The k-space range used to create the map
+   */
+  drawZoneMap(zoneMap, plotRange) {
+    // Calculate where to draw the zone map on the canvas
+    const topLeft = this.toCanvas([-plotRange, plotRange]);
+    const bottomRight = this.toCanvas([plotRange, -plotRange]);
+    
+    const width = bottomRight[0] - topLeft[0];
+    const height = bottomRight[1] - topLeft[1];
+    
+    // Create temporary canvas for the zone map
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = zoneMap.width;
+    tempCanvas.height = zoneMap.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.putImageData(zoneMap, 0, 0);
+    
+    // Draw the zone map scaled to fit the view
+    this.ctx.imageSmoothingEnabled = false; // Nearest neighbor for crisp zones
+    this.ctx.drawImage(tempCanvas, topLeft[0], topLeft[1], width, height);
+    this.ctx.imageSmoothingEnabled = true;
+  }
+
+  /**
    * Full render pass.
    */
-  render({ zones, reciprocalPoints, highSymmetryPoints, b1, b2, transparent = false }) {
+  render({ zones, reciprocalPoints, highSymmetryPoints, b1, b2, transparent = false, zoneMap = null, braggPlanes = null, plotRange = null }) {
     this.clear(transparent);
+    
+    if (zoneMap && plotRange) {
+      // Pixel-based rendering
+      this.drawZoneMap(zoneMap, plotRange);
+      if (braggPlanes) {
+        this.drawBraggPlanes(braggPlanes);
+      }
+    } else {
+      // Polygon-based rendering (original)
+      if (!transparent) {
+        this.drawAxes();
+        this.drawGrid(b1, b2);
+      }
+      this.drawZones(zones);
+    }
+    
+    // Always draw these
     if (!transparent) {
       this.drawAxes();
-      this.drawGrid(b1, b2);
     }
-    this.drawZones(zones);
     this.drawReciprocalPoints(reciprocalPoints);
     this.drawHighSymmetryPoints(highSymmetryPoints);
   }

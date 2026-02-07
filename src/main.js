@@ -15,7 +15,7 @@ import {
   getHighSymmetryPoints2D, getHighSymmetryPoints3D
 } from './core/lattice.js';
 
-import { computeFirstBZ2D, computeNthBZ2D, computeFirstBZ3D } from './core/brillouin.js';
+import { computeFirstBZ2D, computeNthBZ2D, computeFirstBZ3D, computeZoneMapPixelBased, getBraggPlanes } from './core/brillouin.js';
 import { Renderer2D } from './render/render2d.js';
 import { Renderer3D } from './render/render3d.js';
 import { createEnvironmentMap, applyRayTraceSettings, removeRayTraceSettings } from './render/raytracer.js';
@@ -62,15 +62,18 @@ function update2D() {
     const { b1, b2 } = reciprocal2D(lattice.a1, lattice.a2);
 
     // Generate reciprocal lattice points
-    const maxIndex = Math.max(state.maxZone + 2, 4);
-    const reciprocalPoints = generateReciprocalPoints2D(b1, b2, maxIndex);
+    const latticeRange = Math.ceil(Math.sqrt(state.maxZone)) + 5; // Enough for high zones
+    const reciprocalPoints = generateReciprocalPoints2D(b1, b2, latticeRange);
 
-    // Compute zones
-    const zones = [];
-    for (let n = 1; n <= state.maxZone; n++) {
-      const polygons = computeNthBZ2D(reciprocalPoints, n);
-      zones.push({ zone: n, polygons });
-    }
+    // Use pixel-based rendering (Python algorithm)
+    const plotRange = 3.2;
+    const resolution = 800; // High resolution for quality
+    
+    // Compute zone map using pixel-based algorithm
+    const zoneMap = computeZoneMapPixelBased(reciprocalPoints, state.maxZone, resolution, plotRange);
+    
+    // Get Bragg planes for visualization
+    const braggPlanes = getBraggPlanes(reciprocalPoints, plotRange);
 
     // Get high-symmetry points
     currentHighSymmetryPoints = getHighSymmetryPoints2D(state.latticeType, b1, b2);
@@ -80,10 +83,13 @@ function update2D() {
     renderer2d.showReciprocalPoints = state.showReciprocalPoints;
     renderer2d.showZoneNumbers = state.showZoneNumbers;
     renderer2d.showLabels = state.showLabels;
+    renderer2d.pixelBased = true;
 
-    // Render
+    // Render with pixel-based zone map
     renderer2d.render({
-      zones,
+      zoneMap,
+      braggPlanes,
+      plotRange,
       reciprocalPoints: reciprocalPoints.slice(0, 50),
       highSymmetryPoints: currentHighSymmetryPoints,
       b1,
